@@ -3,6 +3,7 @@ package org.chon.appmockito.ejemplos.services;
 import org.chon.appmockito.ejemplos.models.Exam;
 import org.chon.appmockito.ejemplos.repositories.ExamRepository;
 import org.chon.appmockito.ejemplos.repositories.ExamRepositoryImpl;
+import org.chon.appmockito.ejemplos.repositories.QuestionRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -19,12 +20,14 @@ import static org.junit.jupiter.api.Assertions.*;
 class ExamServiceImplTest {
 
     ExamRepository repository;
+    QuestionRepository questionRepository;
     ExamService service;
 
     @BeforeEach
     void setUp() {
         repository = mock(ExamRepository.class);
-        service = new ExamServiceImpl(repository);
+        questionRepository = mock(QuestionRepository.class);    //aqui ponemos la interfaz pero tambien podria ser una clase que implemente a una interfaz con una implementacion cualquiera
+        service = new ExamServiceImpl(repository, questionRepository);
     }
 
     @Test
@@ -37,15 +40,7 @@ class ExamServiceImplTest {
         */
 
         //en este caso el contexto es una lista con data
-        List<Exam> datos = Arrays.asList(
-                new Exam(1L, "Matematicas"),
-                new Exam(2L, "Ciencias"),
-                new Exam(3L, "Comunicacion"),
-                new Exam(4L, "Computacion"),
-                new Exam(5L, "Fisica")
-        );
-
-        when(repository.findAll()).thenReturn(datos); //cuando se llame al método findAll del mock ExamRepository entonces retorname mi variable datos que he creado acá
+        when(repository.findAll()).thenReturn(Datos.EXAMS); //cuando se llame al método findAll del mock ExamRepository entonces retorname mi variable datos que he creado acá
 
 //        Exam exam = service.findByName("Matematicas");
         /*
@@ -75,5 +70,18 @@ class ExamServiceImplTest {
         Optional<Exam> exam = service.findByName("Matematicas");
 
         assertFalse(exam.isPresent());
+    }
+
+    @Test
+    void testExamQuestionsByName() {
+        when(repository.findAll()).thenReturn(Datos.EXAMS);
+        when(questionRepository.findQuestionsByExamId(4L)).thenReturn(Datos.QUESTIONS); //cuando el resultado de la inovacion a este metodo coincida con lo que se envia en el argumento de findExamWithQuestionsByName, se conoce como un Match Arguments; si no coincide simplemente devolverá una lista vacia
+//        when(questionRepository.findQuestionsByExamId(anyLong())).thenReturn(Datos.QUESTIONS); //anyLong() quire decir que se aplique para cualquier id que tenga el valor de Computacion
+
+//        Exam exam = service.findExamWithQuestionsByName("Matematicas");
+        Exam exam = service.findExamWithQuestionsByName("Computacion");
+
+        assertEquals(8, exam.getQuestions().size());
+        assertTrue(exam.getQuestions().contains("¿Quién es el padre de la programación?"));
     }
 }
