@@ -18,24 +18,6 @@ public class ExamServiceImpl implements ExamService {
         this.questionRepository = questionRepository;
     }
 
-    /*
-    @Override
-    public Exam findByName(String name) {
-        Optional<Exam> examOptional = examRepository.findAll()
-                .stream()
-                .filter(e -> e.getName().contains(name))
-                .findFirst();
-
-        Exam exam = null;
-
-        if (examOptional.isPresent()) {
-            exam = examOptional.orElseThrow();
-        }
-
-        return exam;
-    }
-    */
-
     @Override
     public Optional<Exam> findByName(String name) {
         return examRepository.findAll()
@@ -57,5 +39,14 @@ public class ExamServiceImpl implements ExamService {
         }
 
         return exam;
+    }
+
+    @Override
+    public Exam save(Exam exam) {
+        if(!exam.getQuestions().isEmpty()){
+            questionRepository.saveQuestions(exam.getQuestions());
+        }
+
+        return examRepository.save(exam);
     }
 }

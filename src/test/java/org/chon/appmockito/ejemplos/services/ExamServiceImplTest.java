@@ -2,7 +2,6 @@ package org.chon.appmockito.ejemplos.services;
 
 import org.chon.appmockito.ejemplos.models.Exam;
 import org.chon.appmockito.ejemplos.repositories.ExamRepository;
-import org.chon.appmockito.ejemplos.repositories.ExamRepositoryImpl;
 import org.chon.appmockito.ejemplos.repositories.QuestionRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -10,12 +9,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.mockito.Mockito.*;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -121,5 +118,24 @@ class ExamServiceImplTest {
 
         verify(repository).findAll(); //verificamos que del objeto Mock "repository" se invoca el findAll(), y si es que no se llama va a fallar
         verify(questionRepository).findQuestionsByExamId(5L); //verificamos que del objeto Mock "questionRepository" se invoca el findQuestionsByExamId(4L), y si es que no se llama va a fallar
+    }
+
+    @Test
+    void testSaveExam() {
+
+        Exam newExam = Datos.EXAM;
+        newExam.setQuestions(Datos.QUESTIONS);
+
+        when(repository.save(any(Exam.class))).thenReturn(Datos.EXAM); //cuando se ejecute el metodo save de mi repository, entonces retorname los datos del Examen
+
+        Exam exam = service.save(newExam);
+
+        assertNotNull(exam.getId());
+        assertEquals(10L, exam.getId());
+        assertEquals("EPT", exam.getName());
+
+        verify(repository).save(any(Exam.class)); //verificamos que se llame al metodo save()
+        verify(questionRepository).saveQuestions(anyList()); //verificamos que se llame al metodo saveQuestions()
+
     }
 }

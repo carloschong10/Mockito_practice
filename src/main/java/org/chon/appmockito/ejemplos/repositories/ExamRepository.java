@@ -6,4 +6,5 @@ import java.util.List;
 
 public interface ExamRepository {
     List<Exam> findAll(); //crearemos un mock de este objeto sin importar su implementacion
+    Exam save(Exam exam);
 }
