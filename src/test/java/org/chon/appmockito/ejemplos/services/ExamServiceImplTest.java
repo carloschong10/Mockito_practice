@@ -84,4 +84,30 @@ class ExamServiceImplTest {
         assertEquals(8, exam.getQuestions().size());
         assertTrue(exam.getQuestions().contains("¿Quién es el padre de la programación?"));
     }
+
+    @Test
+    void testExamDifferentArgumentsVerify() {
+        when(repository.findAll()).thenReturn(Datos.EXAMS);
+        when(questionRepository.findQuestionsByExamId(4L)).thenReturn(Datos.QUESTIONS);
+
+        Exam exam = service.findExamWithQuestionsByName("Computacion");
+
+        assertNotNull(exam);
+
+        verify(repository).findAll(); //verificamos que del objeto Mock "repository" se invoca el findAll(), y si es que no se llama va a fallar
+        verify(questionRepository).findQuestionsByExamId(7L); //le pasamos un argumento distinto a 4L y verificamos que del objeto Mock "questionRepository" se invoca el findQuestionsByExamId(4L), y si es que no se llama va a fallar
+    }
+
+    @Test
+    void testExamNotExistsVerify() {
+        when(repository.findAll()).thenReturn(Datos.EXAMS);
+        when(questionRepository.findQuestionsByExamId(4L)).thenReturn(Datos.QUESTIONS);
+
+        Exam exam = service.findExamWithQuestionsByName("ComputacionXXX");
+
+        assertNull(exam);
+
+        verify(repository).findAll(); //verificamos que del objeto Mock "repository" se invoca el findAll(), y si es que no se llama va a fallar
+        verify(questionRepository).findQuestionsByExamId(5L); //verificamos que del objeto Mock "questionRepository" se invoca el findQuestionsByExamId(4L), y si es que no se llama va a fallar
+    }
 }
