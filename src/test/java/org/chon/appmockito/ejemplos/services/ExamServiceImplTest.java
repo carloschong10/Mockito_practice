@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.stubbing.Answer;
@@ -185,6 +186,25 @@ class ExamServiceImplTest {
         verify(repository).findAll();
 //        verify(questionRepository).findQuestionsByExamId(null);
         verify(questionRepository).findQuestionsByExamId(isNull()); //isNull() es un metodo de ArgumentMatchers y seria mejor poner esto que directamente null
+    }
+
+    /*
+    Argument Matches es una caracteristica de mockito que te permite saber
+    si coincide el valor real que se pasa por argumento en un método (ejm. en el service)
+    y lo comparamos con los definidos en el mock (ejm. en el when o verify)
+    */
+    @Test
+    void testArgumentsMatchers() {
+        when(repository.findAll()).thenReturn(Datos.EXAMS);
+//        when(repository.findAll()).thenReturn(Datos.EXAMS_WITH_ID_NULL);
+        when(questionRepository.findQuestionsByExamId(anyLong())).thenReturn(Datos.QUESTIONS);
+
+        service.findExamWithQuestionsByName("Matematicas");
+
+        verify(repository).findAll();
+        verify(questionRepository).findQuestionsByExamId(1L);
+//        verify(questionRepository).findQuestionsByExamId(Mockito.argThat(argument -> argument != null && argument.equals(1L)));
+        verify(questionRepository).findQuestionsByExamId(Mockito.argThat(argument -> argument != null && argument >= 1L));
     }
 
 }
