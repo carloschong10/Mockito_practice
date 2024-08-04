@@ -9,7 +9,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.stubbing.Answer;
 
 import static org.mockito.Mockito.*;
 
@@ -122,16 +124,28 @@ class ExamServiceImplTest {
 
     @Test
     void testSaveExam() {
-
+        //BDD:
+        //Given: Dado un entorno de prueba
         Exam newExam = Datos.EXAM;
         newExam.setQuestions(Datos.QUESTIONS);
 
-        when(repository.save(any(Exam.class))).thenReturn(Datos.EXAM); //cuando se ejecute el metodo save de mi repository, entonces retorname los datos del Examen
+//        when(repository.save(any(Exam.class))).thenReturn(Datos.EXAM); //cuando se ejecute el metodo save de mi repository, entonces retorname los datos del Examen
+        when(repository.save(any(Exam.class))).then(new Answer<Exam>(){
+            Long secuence = 5L;
+            @Override
+            public Exam answer(InvocationOnMock invocation) throws Throwable {
+                Exam exam = invocation.getArgument(0); //invocation es el examen que le estoy enviando al repository a través de save(any(Exam.class))
+                exam.setId(secuence++);
+                return exam;
+            }
+        }); //en vez de devolver el mismo examen que estamos guardando, devolvemos un examen modificado del que estamos guardando
 
+        //When: Cuando ejecutamos el método que queremos probar
         Exam exam = service.save(newExam);
 
+        //Then: Entonces validamos
         assertNotNull(exam.getId());
-        assertEquals(10L, exam.getId());
+        assertEquals(5L, exam.getId());
         assertEquals("EPT", exam.getName());
 
         verify(repository).save(any(Exam.class)); //verificamos que se llame al metodo save()
