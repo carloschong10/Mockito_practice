@@ -7,6 +7,11 @@ import org.chon.appmockito.ejemplos.repositories.QuestionRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.mockito.Mockito.*;
 
@@ -17,17 +22,24 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@ExtendWith(MockitoExtension.class)
 class ExamServiceImplTest {
 
+    @Mock
     ExamRepository repository;
+    @Mock
     QuestionRepository questionRepository;
-    ExamService service;
+
+    @InjectMocks //Inyectamos los @Mocks en la implementacion
+    ExamServiceImpl service;
 
     @BeforeEach
     void setUp() {
-        repository = mock(ExamRepository.class);
-        questionRepository = mock(QuestionRepository.class);    //aqui ponemos la interfaz pero tambien podria ser una clase que implemente a una interfaz con una implementacion cualquiera
-        service = new ExamServiceImpl(repository, questionRepository);
+//        repository = mock(ExamRepository.class);
+//        questionRepository = mock(QuestionRepository.class);    //aqui ponemos la interfaz pero tambien podria ser una clase que implemente a una interfaz con una implementacion cualquiera
+//        service = new ExamServiceImpl(repository, questionRepository);
+
+//        MockitoAnnotations.openMocks(this); //para que se pueda inyectar usamos MockitoAnnotations; y otra forma de inyectar es con @ExtendWith(MockitoExtension.class)
     }
 
     @Test
