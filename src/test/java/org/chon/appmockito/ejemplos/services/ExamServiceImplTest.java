@@ -130,8 +130,9 @@ class ExamServiceImplTest {
         newExam.setQuestions(Datos.QUESTIONS);
 
 //        when(repository.save(any(Exam.class))).thenReturn(Datos.EXAM); //cuando se ejecute el metodo save de mi repository, entonces retorname los datos del Examen
-        when(repository.save(any(Exam.class))).then(new Answer<Exam>(){
+        when(repository.save(any(Exam.class))).then(new Answer<Exam>() {
             Long secuence = 5L;
+
             @Override
             public Exam answer(InvocationOnMock invocation) throws Throwable {
                 Exam exam = invocation.getArgument(0); //invocation es el examen que le estoy enviando al repository a través de save(any(Exam.class))
@@ -150,6 +151,40 @@ class ExamServiceImplTest {
 
         verify(repository).save(any(Exam.class)); //verificamos que se llame al metodo save()
         verify(questionRepository).saveQuestions(anyList()); //verificamos que se llame al metodo saveQuestions()
-
     }
+
+    @Test
+    void testManejoException() {
+        when(repository.findAll()).thenReturn(Datos.EXAMS);
+        when(questionRepository.findQuestionsByExamId(anyLong())).thenThrow(IllegalArgumentException.class);
+
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+            service.findExamWithQuestionsByName("Matematicas");
+        });
+
+        assertEquals(IllegalArgumentException.class, exception.getClass());
+//        assertEquals(RuntimeException.class, exception.getClass());
+
+        verify(repository).findAll();
+        verify(questionRepository).findQuestionsByExamId(anyLong());
+    }
+
+    @Test
+    void testManejoExceptionWithNull() {
+        when(repository.findAll()).thenReturn(Datos.EXAMS_WITH_ID_NULL);
+//        when(questionRepository.findQuestionsByExamId(null)).thenThrow(IllegalArgumentException.class);
+        when(questionRepository.findQuestionsByExamId(isNull())).thenThrow(IllegalArgumentException.class); //isNull() es un metodo de ArgumentMatchers y seria mejor poner esto que directamente null
+
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+            service.findExamWithQuestionsByName("Matematicas");
+        });
+
+        assertEquals(IllegalArgumentException.class, exception.getClass());
+//        assertEquals(RuntimeException.class, exception.getClass());
+
+        verify(repository).findAll();
+//        verify(questionRepository).findQuestionsByExamId(null);
+        verify(questionRepository).findQuestionsByExamId(isNull()); //isNull() es un metodo de ArgumentMatchers y seria mejor poner esto que directamente null
+    }
+
 }
