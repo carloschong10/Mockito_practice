@@ -279,4 +279,55 @@ class ExamServiceImplTest {
             service.save(exam);
         });
     }
+
+    @Test
+    void testDoAnswer() {
+        when(repository.findAll()).thenReturn(Datos.EXAMS);
+//        when(questionRepository.findQuestionsByExamId(anyLong())).thenReturn(Datos.QUESTIONS);
+
+        //¿Que pasa si tengo algun tipo de evento de poder capturar ese parametor( anyLong() )?, lo obtenemos mediante doAnswer muy similar al metodo testSaveExam()
+        doAnswer(invocation -> {
+            Long id = invocation.getArgument(0);
+            return id == 2L ? Datos.QUESTIONS : Collections.emptyList();
+        }).when(questionRepository).findQuestionsByExamId(anyLong());
+
+        Exam exam = service.findExamWithQuestionsByName("Ciencias");
+
+        assertEquals(8, exam.getQuestions().size());
+        assertEquals(2L, exam.getId());
+        assertEquals("Ciencias", exam.getName());
+
+        verify(questionRepository).findQuestionsByExamId(anyLong());
+    }
+
+    @Test
+    void testDoAnswerSaveExam() {
+        //BDD:
+        //Given: Dado un entorno de prueba
+        Exam newExam = Datos.EXAM;
+        newExam.setQuestions(Datos.QUESTIONS);
+
+        doAnswer(new Answer<Exam>() {
+            Long secuence = 5L;
+
+            @Override
+            public Exam answer(InvocationOnMock invocation) throws Throwable {
+                Exam exam = invocation.getArgument(0); //invocation es el examen que le estoy enviando al repository a través de save(any(Exam.class))
+                exam.setId(secuence++);
+                return exam;
+            }
+        }).when(repository).save(any(Exam.class));
+
+        //When: Cuando ejecutamos el método que queremos probar
+        Exam exam = service.save(newExam);
+
+        //Then: Entonces validamos
+        assertNotNull(exam.getId());
+        assertEquals(5L, exam.getId());
+        assertEquals("EPT", exam.getName());
+
+        verify(repository).save(any(Exam.class)); //verificamos que se llame al metodo save()
+        verify(questionRepository).saveQuestions(anyList()); //verificamos que se llame al metodo saveQuestions()
+    }
+
 }
