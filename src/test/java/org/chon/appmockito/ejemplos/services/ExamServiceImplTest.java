@@ -7,6 +7,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentMatcher;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -202,9 +203,51 @@ class ExamServiceImplTest {
         service.findExamWithQuestionsByName("Matematicas");
 
         verify(repository).findAll();
-        verify(questionRepository).findQuestionsByExamId(1L);
+//        verify(questionRepository).findQuestionsByExamId(1L);
 //        verify(questionRepository).findQuestionsByExamId(Mockito.argThat(argument -> argument != null && argument.equals(1L)));
         verify(questionRepository).findQuestionsByExamId(Mockito.argThat(argument -> argument != null && argument >= 1L));
+    }
+
+    @Test
+    void testArgumentsMatchers2() {
+//        when(repository.findAll()).thenReturn(Datos.EXAMS);
+        when(repository.findAll()).thenReturn(Datos.EXAMS_NEGATIVES);
+        when(questionRepository.findQuestionsByExamId(anyLong())).thenReturn(Datos.QUESTIONS);
+
+        service.findExamWithQuestionsByName("Matematicas");
+
+        verify(repository).findAll();
+        verify(questionRepository).findQuestionsByExamId(Mockito.argThat(new MiArgsMatchers()));
+    }
+
+    @Test
+    void testArgumentsMatchers3() {
+//        when(repository.findAll()).thenReturn(Datos.EXAMS);
+        when(repository.findAll()).thenReturn(Datos.EXAMS_NEGATIVES);
+        when(questionRepository.findQuestionsByExamId(anyLong())).thenReturn(Datos.QUESTIONS);
+
+        service.findExamWithQuestionsByName("Matematicas");
+
+        verify(repository).findAll();
+        verify(questionRepository).findQuestionsByExamId(Mockito.argThat(argument -> argument != null && argument > 0));
+    }
+
+    public static class MiArgsMatchers implements ArgumentMatcher<Long> {
+
+        private Long argument;
+
+        @Override
+        public boolean matches(Long argument) {
+            this.argument = argument;
+            return argument != null && argument > 0;
+        }
+
+        @Override
+        public String toString() {
+            return "es para un mensaje personalizado de error" +
+                    " en caso de que falle el test, " + argument +
+                    " debe ser un entero positivo";
+        }
     }
 
 }
