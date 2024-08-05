@@ -412,4 +412,34 @@ class ExamServiceImplTest {
         inOrder.verify(questionRepository).findQuestionsByExamId(5L);
     }
 
+    @Test
+    void testNumeroDeInvocaciones() {
+        when(repository.findAll()).thenReturn(Datos.EXAMS);
+        service.findExamWithQuestionsByName("Computacion");
+
+        verify(questionRepository).findQuestionsByExamId(4L); //acá por defecto el times es 1
+        verify(questionRepository, times(1)).findQuestionsByExamId(4L);
+        verify(questionRepository, atLeast(1)).findQuestionsByExamId(4L);
+        verify(questionRepository, atLeastOnce()).findQuestionsByExamId(4L);
+        verify(questionRepository, atMost(20)).findQuestionsByExamId(4L);
+        verify(questionRepository, atMostOnce()).findQuestionsByExamId(4L);
+    }
+
+    @Test
+    void testNumeroDeInvocaciones2() {
+        when(repository.findAll()).thenReturn(Collections.emptyList());
+        service.findExamWithQuestionsByName("Computacion");
+
+        //Verificar si es que nunca se ha llamado a questionRepository
+        verify(questionRepository, never()).findQuestionsByExamId(4L);
+        verifyNoInteractions(questionRepository);
+
+        //Verificar si es que se ha llamado a repository
+        verify(repository).findAll(); //acá por defecto el times es 1
+        verify(repository, times(1)).findAll();
+        verify(repository, atLeast(1)).findAll();
+        verify(repository, atLeastOnce()).findAll();
+        verify(repository, atMost(10)).findAll();
+        verify(repository, atMostOnce()).findAll();
+    }
 }
