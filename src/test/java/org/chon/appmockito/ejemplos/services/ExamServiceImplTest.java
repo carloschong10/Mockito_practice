@@ -1,8 +1,11 @@
 package org.chon.appmockito.ejemplos.services;
 
+import org.chon.appmockito.ejemplos.Datos;
 import org.chon.appmockito.ejemplos.models.Exam;
 import org.chon.appmockito.ejemplos.repositories.ExamRepository;
+import org.chon.appmockito.ejemplos.repositories.ExamRepositoryImpl;
 import org.chon.appmockito.ejemplos.repositories.QuestionRepository;
+import org.chon.appmockito.ejemplos.repositories.QuestionRepositoryImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -23,10 +26,17 @@ import static org.junit.jupiter.api.Assertions.*;
 @ExtendWith(MockitoExtension.class)
 class ExamServiceImplTest {
 
+    /*
     @Mock
     ExamRepository repository;
     @Mock
     QuestionRepository questionRepository;
+    */
+
+    @Mock
+    ExamRepositoryImpl repository;
+    @Mock
+    QuestionRepositoryImpl questionRepository;
 
     @Captor
     ArgumentCaptor<Long> captor;
@@ -330,4 +340,15 @@ class ExamServiceImplTest {
         verify(questionRepository).saveQuestions(anyList()); //verificamos que se llame al metodo saveQuestions()
     }
 
+    @Test
+    void testDoCallRealMethod() { //Usamos doCallRealMethod para la llamada real a un método mock, esto solo se puede hacer con las implementaciones reales
+        when(repository.findAll()).thenReturn(Datos.EXAMS);
+//        when(questionRepository.findQuestionsByExamId(anyLong())).thenReturn(Datos.QUESTIONS);
+        doCallRealMethod().when(questionRepository).findQuestionsByExamId(anyLong()); //de esta forma se invoca al metodo real
+
+        Exam exam = service.findExamWithQuestionsByName("Computacion");
+
+        assertEquals(4L, exam.getId());
+        assertEquals("Computacion", exam.getName());
+    }
 }

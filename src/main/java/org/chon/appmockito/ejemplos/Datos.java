@@ -1,4 +1,4 @@
-package org.chon.appmockito.ejemplos.services;
+package org.chon.appmockito.ejemplos;
 
 import org.chon.appmockito.ejemplos.models.Exam;
 
