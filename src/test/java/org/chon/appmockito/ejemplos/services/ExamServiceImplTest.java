@@ -7,10 +7,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentMatcher;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
+import org.mockito.*;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.stubbing.Answer;
@@ -30,6 +27,9 @@ class ExamServiceImplTest {
     ExamRepository repository;
     @Mock
     QuestionRepository questionRepository;
+
+    @Captor
+    ArgumentCaptor<Long> captor;
 
     @InjectMocks //Inyectamos los @Mocks en la implementacion
     ExamServiceImpl service;
@@ -250,4 +250,18 @@ class ExamServiceImplTest {
         }
     }
 
+    @Test
+    void testArgumentCaptor() {
+        when(repository.findAll()).thenReturn(Datos.EXAMS);
+
+        service.findExamWithQuestionsByName("Matematicas");
+
+        //instanciamos ArgumentCaptor:
+//        ArgumentCaptor<Long> captor = ArgumentCaptor.forClass(Long.class); //lo comentamos para probar con la anotacion @Captor
+
+        verify(questionRepository).findQuestionsByExamId(captor.capture()); //capturamos el argumento
+
+        assertEquals(1L, captor.getValue());
+//        assertEquals(2L, captor.getValue());
+    }
 }
