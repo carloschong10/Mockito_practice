@@ -264,4 +264,19 @@ class ExamServiceImplTest {
         assertEquals(1L, captor.getValue());
 //        assertEquals(2L, captor.getValue());
     }
+
+    @Test
+    void testDoThrow() {
+
+        Exam exam = Datos.EXAM;
+        exam.setQuestions(Datos.QUESTIONS); //tenemos que agregarle las preguntas porque sino el método doThrow no se estaria invocando, ya que en el método save está el sgte if( if(!exam.getQuestions().isEmpty()){} ) que valida si es que están vacias no entre y como tal nunca se ejecutaria el metodo saveQuestions()
+        //y si comentamos la linea exam.setQuestions(Datos.QUESTIONS); nos mostrará el mensaje de error(Se esperaba la esxcepcion IllegalArgumentException pero no se devolvió nada) ya que no entra al metodo saveQuestions()
+
+        //Cuando el método es void y queremos manejar o lanzar una excepcion, se usa el doThrow: que significa hacer algo(lanzamos la excepcion) cuando se invoca a un método
+        doThrow(IllegalArgumentException.class).when(questionRepository).saveQuestions(anyList()); //lanzamos la excepcion o hacemos algo cuando del objeto mock questionRepository invoca al método void saveQuestions()
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            service.save(exam);
+        });
+    }
 }
