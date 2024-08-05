@@ -17,6 +17,7 @@ import org.mockito.stubbing.Answer;
 
 import static org.mockito.Mockito.*;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -350,5 +351,35 @@ class ExamServiceImplTest {
 
         assertEquals(4L, exam.getId());
         assertEquals("Computacion", exam.getName());
+    }
+
+    @Test
+    void testSpy() {
+        /*los espias son un hibrido entre un objeto real y un mock, nos permite invocar sin definir ningun when(ningun simulacro), no tenemos que mockear ningun metodo de
+        este spy ya que no es necesario, simplemente cuando invocamos a un metodo llamará al método real.
+        El mock es 100% simulado por lo tanto todos sus metodos los tenemos que mockear con el when o doAlgo(doThrow, doAnswer, doCallRealMethod); a diferencia del
+        el spy no aqui solo vamos a simular con el when o doAlgo lo que queramos simular, pero el reseto será la llamada real en los demás metodos que definamos esa simulacion,
+        además el spy se crea a partir de una clase concreta y no de una clase abstracta o interfaz, porque va a llamar métodos reales; y si estamos usando una interfaz ese método real no
+        está implementado, por lo tanto va a fallar la prueba.
+        */
+
+        ExamRepository examRepository = spy(ExamRepositoryImpl.class);
+        QuestionRepository questionRepository1 = spy(QuestionRepositoryImpl.class);
+        ExamService examService = new ExamServiceImpl(examRepository, questionRepository1);
+
+        List<String> preguntas = Arrays.asList("¿Qué significa SOLID?");
+
+//        when(questionRepository1.findQuestionsByExamId(anyLong())).thenReturn(Datos.QUESTIONS); //aqui hacemos una invocacion falsa al metodo findQuestionsByExamId, pero si usamos when se va a imprimir QuestionRepositoryImpl.findQuestionsByExamId, cuando no deberia imrimirse, asi que haceos uso de doReturn().when()
+        doReturn(preguntas).when(questionRepository1).findQuestionsByExamId(anyLong()); //y con esto ya se imprimiria nomas ExamRepositoryImpl.findAll
+
+        Exam exam = examService.findExamWithQuestionsByName("Computacion"); //aqui estamos llamando directamente al metodo con el service(llamada real al metodo findAll()), en los spy no usamos when
+
+        assertEquals(4, exam.getId());
+        assertEquals("Computacion", exam.getName());
+        assertEquals(1, exam.getQuestions().size());
+        assertTrue(exam.getQuestions().contains("¿Qué significa SOLID?"));
+
+        verify(examRepository).findAll();   //va a verificar y realmente se está llamando de forma real
+        verify(questionRepository1).findQuestionsByExamId(anyLong());   //se está llamando pero el simulado (mock)
     }
 }
