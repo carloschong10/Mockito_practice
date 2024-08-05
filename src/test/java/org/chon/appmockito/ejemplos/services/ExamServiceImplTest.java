@@ -382,4 +382,34 @@ class ExamServiceImplTest {
         verify(examRepository).findAll();   //va a verificar y realmente se está llamando de forma real
         verify(questionRepository1).findQuestionsByExamId(anyLong());   //se está llamando pero el simulado (mock)
     }
+
+    @Test
+    void testOrdenDeInvocaciones() {
+        when(repository.findAll()).thenReturn(Datos.EXAMS);
+
+        service.findExamWithQuestionsByName("Ciencias");
+        service.findExamWithQuestionsByName("Fisica");
+
+        InOrder inOrder = inOrder(questionRepository);
+        inOrder.verify(questionRepository).findQuestionsByExamId(2L);
+        inOrder.verify(questionRepository).findQuestionsByExamId(5L);
+    }
+
+    @Test
+    void testOrdenDeInvocaciones2() {
+        when(repository.findAll()).thenReturn(Datos.EXAMS);
+
+        service.findExamWithQuestionsByName("Ciencias");
+        service.findExamWithQuestionsByName("Fisica");
+
+        InOrder inOrder = inOrder(repository, questionRepository); //agregamos un mock mas que es repository
+
+        //los colocamos en orden respectivo porque si colocamos el metodo inOrder.verify(repository).findAll(); seguido se caerá ya que en un mock no se puede llamar 2 veces si uno uno en cada mock
+        inOrder.verify(repository).findAll();
+        inOrder.verify(questionRepository).findQuestionsByExamId(2L);
+
+        inOrder.verify(repository).findAll();
+        inOrder.verify(questionRepository).findQuestionsByExamId(5L);
+    }
+
 }
